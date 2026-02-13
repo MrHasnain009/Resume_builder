@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load resume_filters %}
+    <meta charset="UTF-8">
+    <title>{{ fullName }} - Classic Resume Preview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            line-height: 1.5;
+            color: #000;
+        }
+        .resume-container {
+            width: 8.5in;
+            min-height: 10in;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+            padding: 0.8in;
+        }
+        .header-classic {
+            text-align: center;
+            margin-bottom: 0.5in;
+        }
+        .header-classic h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.2rem;
+        }
+        .header-classic p {
+            font-size: 0.9rem;
+            margin-bottom: 0.1rem;
+        }
+        .section-classic {
+            margin-bottom: 0.3in;
+        }
+        .section-title-classic {
+            font-size: 1.3rem;
+            border-bottom: 1px solid #000;
+            padding-bottom: 0.1rem;
+            margin-bottom: 0.2rem;
+            font-weight: bold;
+        }
+        .item-classic h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.1rem;
+            font-weight: bold;
+        }
+        .item-classic p {
+            font-size: 0.9rem;
+            margin-bottom: 0.1rem;
+        }
+        .skills-list-classic {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .skills-list-classic li {
+            display: inline-block;
+            margin-right: 0.5rem;
+            margin-bottom: 0.2rem;
+            background-color: #eee;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.85rem;
+        }
+        .profile-pic-classic {
+            display: block;
+            margin: 0 auto 0.5in auto;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #ccc;
+        }
+    </style>
+    {% load resume_filters %} {# Agar aapne custom filters banaye hain #}
+</head>
+<body>
+    <div class="resume-container">
+        <div class="header-classic">
+            {% if profile_picture_base64 %}
+                <img src="{{ profile_picture_base64 }}" alt="Profile Picture" class="profile-pic-classic">
+            {% endif %}
+            <h1>{{ fullName }}</h1>
+            <p>{{ address }} | {{ phone }} | {{ email }} | <a href="{{ linkedin }}" target="_blank" style="color: #000; text-decoration: underline;">LinkedIn</a></p>
+        </div>
+
+        {% if summary %}
+        <div class="section-classic">
+            <h2 class="section-title-classic">Summary</h2>
+            <p>{{ summary|linebreaksbr }}</p>
+        </div>
+        {% endif %}
+
+        {% if experience_entries %}
+        <div class="section-classic">
+            <h2 class="section-title-classic">Experience</h2>
+            {% for entry in experience_entries %}
+            <div class="item-classic">
+                <h3>{{ entry.job_title }} at {{ entry.company }}</h3>
+                <p>{{ entry.start_date }} - {{ entry.end_date }}</p>
+                {% if entry.responsibilities %}
+                    <ul>
+                        {% for responsibility in entry.responsibilities|split:"\n" %}
+                            {% if responsibility|trim %}<li>{{ responsibility|trim }}</li>{% endif %}
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if education_entries %}
+        <div class="section-classic">
+            <h2 class="section-title-classic">Education</h2>
+            {% for entry in education_entries %}
+            <div class="item-classic">
+                <h3>{{ entry.degree }}, {{ entry.university }}</h3>
+                <p>{{ entry.start_date }} - {{ entry.end_date }}</p>
+                {% if entry.description %}
+                    <p>{{ entry.description|linebreaksbr }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if skill_entries %}
+        <div class="section-classic">
+            <h2 class="section-title-classic">Skills</h2>
+            <ul class="skills-list-classic">
+                {% for entry in skill_entries %}
+                    <li>{{ entry.name }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Builder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top for longer forms */
+            min-height: 100vh;
+            padding: 2rem 0; /* Add padding for better spacing */
+        }
+        .container {
+            max-width: 900px;
+            width: 95%;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem;
+            margin: 2rem 0;
+        }
+        .form-section {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .form-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #374151;
+        }
+        .input-group input[type="text"],
+        .input-group input[type="email"],
+        .input-group input[type="tel"],
+        .input-group textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            color: #4b5563;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .input-group input[type="text"]:focus,
+        .input-group input[type="email"]:focus,
+        .input-group input[type="tel"]:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        .input-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .add-button {
+            background-color: #4f46e5;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .add-button:hover {
+            background-color: #4338ca;
+        }
+        .remove-button {
+            background-color: #ef4444;
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            margin-top: 0.5rem;
+            display: inline-block;
+        }
+        .remove-button:hover {
+            background-color: #dc2626;
+        }
+        .profile-picture-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .profile-picture-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: #e0e7ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            border: 2px solid #a5b4fc;
+        }
+        .profile-picture-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .profile-picture-preview svg {
+            color: #6366f1;
+            width: 60px;
+            height: 60px;
+        }
+        .file-upload-button {
+            background-color: #6366f1;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .file-upload-button:hover {
+            background-color: #4f46e5;
+        }
+        .file-upload-button input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    
+    <div class="container">
+        
+        <h1 class="text-4xl font-bold text-center text-gray-800 mb-8">Build Your Resume</h1>
+
+
+        <form id="resumeForm" class="space-y-8" enctype="multipart/form-data">
+            {% csrf_token %} <div class="form-section">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-6">Personal Information</h2>
+                <div class="profile-picture-upload">
+                    <div class="profile-picture-preview" id="profilePicturePreview">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                        </svg>
+                    </div>
+                    <label for="profilePicture" class="file-upload-button">
+                        Upload Profile Picture
+                        <input type="file" id="profilePicture" name="profilePicture" accept="image/*" class="hidden">
+                    </label>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="input-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" name="fullName" placeholder="Hasnain Mughal" required class="rounded-lg">
+                    </div>
+                    <div class="input-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" placeholder="mrhasnain009@gmail.com" required class="rounded-lg">
+                    </div>
+                    <div class="input-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" placeholder="+1234567890" class="rounded-lg">
+                    </div>
+                    <div class="input-group">
+                        <label for="linkedin">LinkedIn Profile (URL)</label>
+                        <input type="text" id="linkedin" name="linkedin" placeholder="https://linkedin.com/in/johndoe" class="rounded-lg">
+                    </div>
+                    <div class="input-group md:col-span-2">
+                        <label for="address">Address</label>
+                        <input type="text" id="address" name="address" placeholder="Noor Shah,Sahiwal,Pakista" class="rounded-lg">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-6">Summary / Objective</h2>
+                <div class="input-group">
+                    <label for="summary">Write a brief summary or objective for your resume.</label>
+                    <textarea id="summary" name="summary" placeholder="Highly motivated and results-oriented professional with X years of experience..." class="rounded-lg"></textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-6">Education</h2>
+                <div id="educationEntries" class="space-y-6">
+                    </div>
+                <button type="button" id="addEducation" class="add-button mt-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    Add Education
+                </button>
+            </div>
+
+            <div class="form-section">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-6">Experience</h2>
+                <div id="experienceEntries" class="space-y-6">
+                    </div>
+                <button type="button" id="addExperience" class="add-button mt-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    Add Experience
+                </button>
+            </div>
+
+            <div class="form-section">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-6">Skills</h2>
+                <div id="skillsEntries" class="space-y-4">
+                    </div>
+                <button type="button" id="addSkill" class="add-button mt-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    Add Skill
+                </button>
+            </div>
+
+            <div class="text-center pt-4">
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                    Generate Resume
+                </button>
+            </div>
+        </form>
+        
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const educationEntries = document.getElementById('educationEntries');
+            const addEducationButton = document.getElementById('addEducation');
+            const experienceEntries = document.getElementById('experienceEntries');
+            const addExperienceButton = document.getElementById('addExperience');
+            const skillsEntries = document.getElementById('skillsEntries');
+            const addSkillButton = document.getElementById('addSkill');
+            const profilePictureInput = document.getElementById('profilePicture');
+            const profilePicturePreview = document.getElementById('profilePicturePreview');
+            const resumeForm = document.getElementById('resumeForm');
+
+            // --- Profile Picture Preview ---
+            profilePictureInput.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        profilePicturePreview.innerHTML = `<img src="${e.target.result}" alt="Profile Picture">`;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    profilePicturePreview.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                                         </svg>`;
+                }
+            });
+
+            // --- Dynamic Education Fields ---
+            let educationCount = 0;
+            const addEducationField = () => {
+                educationCount++;
+                const div = document.createElement('div');
+                div.className = 'education-entry p-6 border border-gray-200 rounded-lg shadow-sm relative';
+                div.innerHTML = `
+                    <button type="button" class="remove-button absolute top-2 right-2 text-sm">Remove</button>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="input-group">
+                            <label for="degree${educationCount}">Degree/Program</label>
+                            <input type="text" id="degree${educationCount}" name="education-${educationCount}-degree" placeholder="e.g., Bachelor of Science in Computer Science" class="rounded-lg">
+                        </div>
+                        <div class="input-group">
+                            <label for="university${educationCount}">University/Institution</label>
+                            <input type="text" id="university${educationCount}" name="education-${educationCount}-university" placeholder="e.g., University of Example" class="rounded-lg">
+                        </div>
+                        <div class="input-group">
+                            <label for="eduStartDate${educationCount}">Start Date</label>
+                            <input type="text" id="eduStartDate${educationCount}" name="education-${educationCount}-startDate" placeholder="e.g., Sep 2018" class="rounded-lg">
+                        </div>
+                        <div class="input-group">
+                            <label for="eduEndDate${educationCount}">End Date</label>
+                            <input type="text" id="eduEndDate${educationCount}" name="education-${educationCount}-endDate" placeholder="e.g., May 2022 or Present" class="rounded-lg">
+                        </div>
+                        <div class="input-group md:col-span-2">
+                            <label for="eduDescription${educationCount}">Description (Optional)</label>
+                            <textarea id="eduDescription${educationCount}" name="education-${educationCount}-description" placeholder="Relevant coursework, honors, projects..." class="rounded-lg"></textarea>
+                        </div>
+                    </div>
+                `;
+                educationEntries.appendChild(div);
+                div.querySelector('.remove-button').addEventListener('click', () => div.remove());
+            };
+            addEducationButton.addEventListener('click', addEducationField);
+            addEducationField(); // Add one field by default
+
+            // --- Dynamic Experience Fields ---
+            let experienceCount = 0;
+            const addExperienceField = () => {
+                experienceCount++;
+                const div = document.createElement('div');
+                div.className = 'experience-entry p-6 border border-gray-200 rounded-lg shadow-sm relative';
+                div.innerHTML = `
+                    <button type="button" class="remove-button absolute top-2 right-2 text-sm">Remove</button>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="input-group">
+                            <label for="jobTitle${experienceCount}">Job Title</label>
+                            <input type="text" id="jobTitle${experienceCount}" name="experience-${experienceCount}-title" placeholder="e.g., Software Engineer" class="rounded-lg">
+                        </div>
+                        <div class="input-group">
+                            <label for="company${experienceCount}">Company</label>
+                            <input type="text" id="company${experienceCount}" name="experience-${experienceCount}-company" placeholder="e.g., Tech Solutions Inc." class="rounded-lg">
+                        </div>
+                        <div class="input-group">
+                            <label for="expStartDate${experienceCount}">Start Date</label>
+                            <input type="text" id="expStartDate${experienceCount}" name="experience-${experienceCount}-startDate" placeholder="e.g., Jun 2022" class="rounded-lg">
+                        </div>
+                        <div class="input-group">
+                            <label for="expEndDate${experienceCount}">End Date</label>
+                            <input type="text" id="expEndDate${experienceCount}" name="experience-${experienceCount}-endDate" placeholder="e.g., Present" class="rounded-lg">
+                            </div>
+                        <div class="input-group md:col-span-2">
+                            <label for="responsibilities${experienceCount}">Responsibilities & Achievements</label>
+                            <textarea id="responsibilities${experienceCount}" name="experience-${experienceCount}-responsibilities" placeholder="List key responsibilities and quantifiable achievements (one per line)" class="rounded-lg"></textarea>
+                        </div>
+                    </div>
+                `;
+                experienceEntries.appendChild(div);
+                div.querySelector('.remove-button').addEventListener('click', () => div.remove());
+            };
+            addExperienceButton.addEventListener('click', addExperienceField);
+            addExperienceField(); // Add one field by default
+
+            // --- Dynamic Skills Fields ---
+            let skillCount = 0;
+            const addSkillField = () => {
+                skillCount++;
+                const div = document.createElement('div');
+                div.className = 'skill-entry flex items-center gap-4';
+                div.innerHTML = `
+                    <div class="input-group flex-grow">
+                        <label for="skill${skillCount}" class="sr-only">Skill</label>
+                        <input type="text" id="skill${skillCount}" name="skill-${skillCount}-name" placeholder="e.g., Python, JavaScript, Project Management" class="rounded-lg">
+                    </div>
+                    <button type="button" class="remove-button">Remove</button>
+                `;
+                skillsEntries.appendChild(div);
+                div.querySelector('.remove-button').addEventListener('click', () => div.remove());
+            };
+            addSkillButton.addEventListener('click', addSkillField);
+            addSkillField(); // Add one field by default
+
+            // --- Form Submission (Sending FormData directly) ---
+            resumeForm.addEventListener('submit', async function(event) {
+                event.preventDefault(); // Prevent default form submission
+
+                const formData = new FormData(this); // 'this' refers to the form element
+
+                // Add counts for dynamic sections for easier processing in Django
+                formData.append('education_count', educationCount);
+                formData.append('experience_count', experienceCount);
+                formData.append('skill_count', skillCount);
+
+                // This is a placeholder for your Django API endpoint
+                // Ensure this matches the URL in resumeapp/urls.py
+                const djangoApiEndpoint = '/preview/'; // Or '/api/generate-resume/' if that's the final target
+
+                try {
+                    const response = await fetch(djangoApiEndpoint, {
+                        method: 'POST',
+                        // No 'Content-Type' header needed when sending FormData directly
+                        // The browser sets it automatically to 'multipart/form-data' with the correct boundary
+                        // If {% csrf_token %} is in the form, FormData will automatically include 'csrfmiddlewaretoken'.
+                        // Remove the headers object completely if relying on form-based CSRF token.
+                        // headers: {
+                        //     'X-CSRFToken': getCookie('csrftoken'), // NOT NEEDED if {% csrf_token %} is in the form
+                        // },
+                        body: formData, // Send FormData directly
+                    });
+
+                    if (response.ok) {
+                        // If /preview/ returns HTML, you might want to redirect or load it into an iframe
+                        // If it returns JSON, process as before
+                        const contentType = response.headers.get("content-type");
+                        if (contentType && contentType.includes("application/json")) {
+                            const result = await response.json();
+                            console.log('Resume data submitted successfully:', result);
+                            alert('Resume data submitted successfully! Check console for response.');
+                        } else {
+                            // Assuming /preview/ returns an HTML page
+                            const htmlContent = await response.text();
+                            // Example: Open in a new tab for preview
+                            const newWindow = window.open('', '_blank');
+                            newWindow.document.write(htmlContent);
+                            newWindow.document.close();
+                            console.log('Preview HTML received and opened in new window.');
+                        }
+                    } else {
+                        // Attempt to parse JSON error first, then fall back to text
+                        let errorData;
+                        const contentType = response.headers.get("content-type");
+                        if (contentType && contentType.includes("application/json")) {
+                            errorData = await response.json();
+                        } else {
+                            errorData = await response.text();
+                        }
+                        console.error('Error submitting resume:', response.status, errorData);
+                        alert(`Failed to submit resume. Status: ${response.status}. Error: ${JSON.stringify(errorData)}`);
+                    }
+                } catch (error) {
+                    console.error('Network error or unexpected issue:', error);
+                    alert('An error occurred. Please check your network connection or server status.');
+                }
+            });
+
+            // The getCookie function is no longer needed if you use {% csrf_token %} in the form
+            // function getCookie(name) { ... }
+        });
+    </script>
+</body>
+</html>             

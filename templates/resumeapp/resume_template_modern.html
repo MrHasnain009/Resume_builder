@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load resume_filters %}
+    <meta charset="UTF-8">
+    <title>{{ fullName }} - Modern Resume Preview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .resume-container {
+            width: 8.5in; /* Standard A4 width */
+            min-height: 10in; /* Standard A4 height */
+            background-color: #ffffff;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        .header-section {
+            background-color: #f8f8f8;
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+        }
+        .header-section img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 1.5rem;
+            border: 2px solid #ddd;
+        }
+        .header-info h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 0.2rem;
+        }
+        .header-info p {
+            font-size: 1rem;
+            color: #555;
+            margin-bottom: 0.2rem;
+        }
+        .contact-info {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+        .contact-info p {
+            margin-right: 1.5rem;
+            font-size: 0.9rem;
+        }
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+        }
+        .section {
+            margin-bottom: 1.5rem;
+        }
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #222;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .section-content p {
+            margin-bottom: 0.5rem;
+        }
+        .summary-text {
+            font-size: 1rem;
+            color: #444;
+        }
+        .experience-item, .education-item {
+            margin-bottom: 1.2rem;
+        }
+        .experience-item h3, .education-item h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.2rem;
+        }
+        .experience-item p, .education-item p {
+            font-size: 0.95rem;
+            color: #555;
+            margin-bottom: 0.1rem;
+        }
+        .experience-item ul {
+            list-style: disc;
+            margin-left: 1.5rem;
+            color: #555;
+            font-size: 0.9rem;
+        }
+        .experience-item ul li {
+            margin-bottom: 0.2rem;
+        }
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .skill-item {
+            background-color: #e0f2f7; /* Light blue background for skills */
+            color: #2196f3; /* Blue text for skills */
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+    </style>
+    {% load resume_filters %} {# Agar aapne custom filters banaye hain #}
+</head>
+<body>
+    <div class="resume-container">
+        <div class="header-section">
+            {% if profile_picture_base64 %}
+                <img src="{{ profile_picture_base64 }}" alt="Profile Picture" class="profile-picture">
+            {% endif %}
+            <div class="header-info">
+                <h1>{{ fullName }}</h1>
+                <p>Sales Representative</p> {# Replace with actual Job Title if available #}
+                <div class="contact-info">
+                    <p>Phone: {{ phone }}</p>
+                    <p>Email: {{ email }}</p>
+                    <p>LinkedIn: <a href="{{ linkedin }}" target="_blank" style="color: #2196f3; text-decoration: none;">{{ linkedin }}</a></p>
+                    <p>Address: {{ address }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            {% if summary %}
+            <div class="section">
+                <h2 class="section-title">Summary</h2>
+                <div class="section-content summary-text">
+                    <p>{{ summary|linebreaksbr }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if experience_entries %}
+            <div class="section">
+                <h2 class="section-title">Experience</h2>
+                <div class="section-content">
+                    {% for entry in experience_entries %}
+                    <div class="experience-item">
+                        <h3>{{ entry.job_title }} at {{ entry.company }}</h3>
+                        <p>{{ entry.start_date }} - {{ entry.end_date }}</p>
+                        {% if entry.responsibilities %}
+                            <ul>
+                                {% for responsibility in entry.responsibilities|split:"\n" %}
+                                    {% if responsibility|trim %}<li>{{ responsibility|trim }}</li>{% endif %}
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if education_entries %}
+            <div class="section">
+                <h2 class="section-title">Education</h2>
+                <div class="section-content">
+                    {% for entry in education_entries %}
+                    <div class="education-item">
+                        <h3>{{ entry.degree }} at {{ entry.university }}</h3>
+                        <p>Dates: {{ entry.start_date }} - {{ entry.end_date }}</p>
+                        {% if entry.description %}
+                            <p>Description: {{ entry.description|linebreaksbr }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if skill_entries %}
+            <div class="section">
+                <h2 class="section-title">Skills</h2>
+                <div class="section-content skills-list">
+                    {% for entry in skill_entries %}
+                        <span class="skill-item">{{ entry.name }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

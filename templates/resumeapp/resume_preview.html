@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Your Resume Template</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c; /* Dark black background */
+            padding: 2rem;
+            color: #e2e8f0; /* Light text for dark background */
+            overflow-x: hidden; /* Prevent horizontal scrollbar on body */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1.page-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #63b3ed; /* Attractive blue for title */
+            margin-bottom: 2.5rem; /* Increased margin */
+            width: 100%;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        /* --- Template Slider Styling --- */
+        .template-slider-container {
+            position: relative;
+            width: 90%; /* Increased width of the slider area */
+            max-width: 1000px; /* Max width for consistency */
+            height: 650px; /* Increased height for the slider viewport */
+            margin: 2rem auto;
+            display: flex;
+            justify-content: center; /* Center the cards horizontally */
+            align-items: center; /* Center the cards vertically */
+            perspective: 1200px; /* For better 3D transforms */
+            padding: 0 80px; /* Padding for arrows to sit outside */
+        }
+
+        .template-card {
+            position: absolute;
+            width: 400px; /* Base width of the cards */
+            height: 580px; /* Base height of the cards */
+            background-color: #2d3748; /* Darker card background */
+            border-radius: 15px; /* More rounded corners */
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5); /* Stronger shadow */
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.6s ease-out, z-index 0.001s; /* Smoother transitions */
+            transform-style: preserve-3d; /* For child transforms */
+            z-index: 1; /* Default low z-index */
+            border: 1px solid rgba(100, 116, 139, 0.3); /* Subtle border */
+
+            /* Default state for all cards, will be overridden by data-offset */
+            transform: translateX(0) rotateY(0deg) scale(0.8);
+            opacity: 0.8;
+        }
+
+        /* Styles based on data-offset attribute */
+        .template-card[data-offset="0"] { /* Active card */
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            z-index: 100;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+        }
+
+        .template-card[data-offset="-1"] { /* Left adjacent */
+            transform: translateX(-220px) rotateY(10deg) scale(0.85);
+            opacity: 0.8;
+            z-index: 90;
+        }
+        .template-card[data-offset="1"] { /* Right adjacent */
+            transform: translateX(220px) rotateY(-10deg) scale(0.85);
+            opacity: 0.8;
+            z-index: 90;
+        }
+        .template-card[data-offset="-2"] { /* Further left */
+            transform: translateX(-400px) rotateY(15deg) scale(0.7);
+            opacity: 0.6;
+            z-index: 80;
+        }
+        .template-card[data-offset="2"] { /* Further right */
+            transform: translateX(400px) rotateY(-15deg) scale(0.7);
+            opacity: 0.6;
+            z-index: 80;
+        }
+        .template-card[data-offset="-3"] { /* Even further left */
+            transform: translateX(-550px) rotateY(20deg) scale(0.55);
+            opacity: 0.4;
+            z-index: 70;
+        }
+        .template-card[data-offset="3"] { /* Even further right */
+            transform: translateX(550px) rotateY(-20deg) scale(0.55);
+            opacity: 0.4;
+            z-index: 70;
+        }
+        
+        /* General styling for cards that are even further away */
+        .template-card[data-offset^="-"][data-offset]:not([data-offset="-1"]):not([data-offset="-2"]):not([data-offset="-3"]) {
+            transform: translateX(calc(var(--abs-offset, 4) * -200px)) rotateY(25deg) scale(0.4); 
+            opacity: 0.2;
+            z-index: 60;
+        }
+        .template-card[data-offset]:not([data-offset="0"]):not([data-offset="1"]):not([data-offset="2"]):not([data-offset="3"]):not([data-offset^="-"]) {
+            transform: translateX(calc(var(--abs-offset, 4) * 200px)) rotateY(-25deg) scale(0.4); 
+            opacity: 0.2;
+            z-index: 60;
+        }
+
+
+        /* Hide cards that are too far away to be seen */
+        .template-card[data-offset="-4"], .template-card[data-offset="4"] {
+             opacity: 0; 
+             pointer-events: none; 
+             transform: translateX(calc(var(--current-offset) * 1000px)) scale(0.1); 
+        }
+
+
+        .template-card h2 {
+            font-size: 1.4rem; 
+            font-weight: 700;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid rgba(100, 116, 139, 0.2);
+            text-align: center;
+            color: #63b3ed; 
+            background-color: #252b35; 
+        }
+
+        .template-preview-wrapper {
+            border: 1px solid #3b4559; 
+            overflow: hidden;
+            background-color: #21252b; 
+            flex-grow: 1;
+            padding: 0.5rem;
+            height: calc(100% - 100px); 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .template-preview-wrapper > div { 
+            transform: scale(0.4); 
+            transform-origin: top left;
+            width: 250%; 
+            height: 250%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none; 
+            filter: grayscale(10%); 
+        }
+
+        .template-actions {
+            padding: 1rem;
+            text-align: center;
+            border-top: 1px solid #3b4559;
+            background-color: #252b35; 
+            position: absolute; 
+            bottom: 0;
+            width: 100%;
+        }
+        .template-actions button {
+            background-color: #4f46e5;
+            color: white;
+            padding: 0.85rem 2rem; 
+            border-radius: 10px; 
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        .template-actions button:hover {
+            background-color: #4338ca;
+            transform: translateY(-2px);
+        }
+
+        /* Navigation Arrows */
+        .slider-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(99, 179, 237, 0.2); 
+            color: #63b3ed;
+            border: 2px solid #63b3ed;
+            padding: 1rem 1.2rem;
+            cursor: pointer;
+            font-size: 2.5rem;
+            z-index: 150; 
+            border-radius: 50%; 
+            transition: background-color 0.3s, color 0.3s, transform 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px; 
+            height: 60px; 
+        }
+        .slider-arrow:hover {
+            background-color: #63b3ed;
+            color: #1a202c; 
+            transform: translateY(-50%) scale(1.05);
+        }
+        .slider-arrow.left { left: 10px; } 
+        .slider-arrow.right { right: 10px; } 
+
+
+        /* --- Loading Overlay Styling --- */
+        #loadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9); 
+            opacity: 0; 
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease; 
+            
+            display: flex; 
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            flex-direction: column;
+            backdrop-filter: blur(5px); 
+        }
+
+        #loadingOverlay.show { 
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loader {
+            width: 100px; 
+            height: 100px;
+            border: 10px solid #2d3748; 
+            border-top: 10px solid #63b3ed; 
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite; 
+            margin-bottom: 1.5rem;
+            box-shadow: 0 0 20px rgba(99, 179, 237, 0.5); 
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #loadingOverlay p {
+            font-size: 1.5rem; 
+            font-weight: 600;
+            color: #a0aec0; 
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+        }
+    </style>
+</head>
+<body>
+    <h1 class="page-title">Select Your Resume Template</h1>
+
+    <div class="template-slider-container">
+        <button class="slider-arrow left" id="prevBtn">&larr;</button>
+
+        <div class="template-card" data-template-index="0">
+            <h2>Modern Template</h2>
+            <div class="template-preview-wrapper">
+                {% include 'resumeapp/resume_template_modern.html' %}
+            </div>
+            <div class="template-actions">
+                <form class="download-form" action="{% url 'download_pdf' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="template_name" value="resume_template_modern.html">
+                    {# Pass all form data from original submission #}
+                    {% for key, value in original_form_data.items %}
+                        {% if key != 'profilePicture' %} 
+                            {% if value is iterable and not value is string %}
+                                {% for item in value %}
+                                    <input type="hidden" name="{{ key }}" value="{{ item }}">
+                                {% endfor %}
+                            {% else %}
+                                <input type="hidden" name="{{ key }}" value="{{ value }}">
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    <input type="hidden" name="profile_picture_base64_for_download" value="{{ profile_picture_base64_for_download }}">
+                    
+                    <button type="submit">Download Modern PDF</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="template-card" data-template-index="1">
+            <h2>Classic Template</h2>
+            <div class="template-preview-wrapper">
+                {% include 'resumeapp/resume_template_classic.html' %}
+            </div>
+            <div class="template-actions">
+                <form class="download-form" action="{% url 'download_pdf' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="template_name" value="resume_template_classic.html">
+                    {# Pass all form data from original submission #}
+                    {% for key, value in original_form_data.items %}
+                        {% if key != 'profilePicture' %}
+                            {% if value is iterable and not value is string %}
+                                {% for item in value %}
+                                    <input type="hidden" name="{{ key }}" value="{{ item }}">
+                                {% endfor %}
+                            {% else %}
+                                <input type="hidden" name="{{ key }}" value="{{ value }}">
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    <input type="hidden" name="profile_picture_base64_for_download" value="{{ profile_picture_base64_for_download }}">
+
+                    <button type="submit">Download Classic PDF</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="template-card" data-template-index="2">
+            <h2>Yellow Sidebar Template</h2>
+            <div class="template-preview-wrapper">
+                {% include 'resumeapp/resume_template_yellow_sidebar.html' %}
+            </div>
+            <div class="template-actions">
+                <form class="download-form" action="{% url 'download_pdf' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="template_name" value="resume_template_yellow_sidebar.html">
+                    {# Pass all form data from original submission #}
+                    {% for key, value in original_form_data.items %}
+                        {% if key != 'profilePicture' %}
+                            {% if value is iterable and not value is string %}
+                                {% for item in value %}
+                                    <input type="hidden" name="{{ key }}" value="{{ item }}">
+                                {% endfor %}
+                            {% else %}
+                                <input type="hidden" name="{{ key }}" value="{{ value }}">
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    <input type="hidden" name="profile_picture_base64_for_download" value="{{ profile_picture_base64_for_download }}">
+                    <button type="submit">Download Yellow Sidebar PDF</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="template-card" data-template-index="3">
+            <h2>Blue Top Banner Template</h2>
+            <div class="template-preview-wrapper">
+                {% include 'resumeapp/resume_template_blue_top_banner.html' %}
+            </div>
+            <div class="template-actions">
+                <form class="download-form" action="{% url 'download_pdf' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="template_name" value="resume_template_blue_top_banner.html">
+                    {# Pass all form data from original submission #}
+                    {% for key, value in original_form_data.items %}
+                        {% if key != 'profilePicture' %}
+                            {% if value is iterable and not value is string %}
+                                {% for item in value %}
+                                    <input type="hidden" name="{{ key }}" value="{{ item }}">
+                                {% endfor %}
+                            {% else %}
+                                <input type="hidden" name="{{ key }}" value="{{ value }}">
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    <input type="hidden" name="profile_picture_base64_for_download" value="{{ profile_picture_base64_for_download }}">
+                    <button type="submit">Download Blue Top Banner PDF</button>
+                </form>
+            </div>
+        </div>
+        <button class="slider-arrow right" id="nextBtn">&rarr;</button>
+    </div>
+
+    <div id="loadingOverlay">
+        <div class="loader"></div>
+        <p>Generating your PDF...</p>
+        <p>Please wait, this may take a moment.</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = Array.from(document.querySelectorAll('.template-card'));
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+
+            console.log('DOM Content Loaded. Initializing scripts.');
+            if (!loadingOverlay) {
+                console.error('Error: #loadingOverlay element not found!');
+            }
+
+            let currentIndex = 0; // Start with the first card active
+
+            function updateCardPositions() {
+                cards.forEach((card, index) => {
+                    let offset = index - currentIndex;
+
+                    // Handle circular logic (wrap around)
+                    if (offset > cards.length / 2) {
+                        offset -= cards.length;
+                    } else if (offset < -cards.length / 2) {
+                        offset += cards.length;
+                    }
+
+                    // Remove existing data-offset and active class
+                    card.removeAttribute('data-offset');
+                    card.classList.remove('active');
+                    
+                    // Apply new data-offset and active class if applicable
+                    if (offset === 0) {
+                        card.classList.add('active');
+                    }
+                    card.setAttribute('data-offset', offset.toString());
+
+                    // Force reflow/re-render to ensure CSS transitions apply correctly
+                    void card.offsetWidth; 
+                });
+            }
+
+            // Navigation functions
+            function goToNext() {
+                currentIndex = (currentIndex + 1) % cards.length;
+                updateCardPositions();
+            }
+
+            function goToPrev() {
+                currentIndex = (currentIndex - 1 + cards.length) % cards.length; // Ensure positive index
+                updateCardPositions();
+            }
+
+            // Event Listeners for arrows
+            prevBtn.addEventListener('click', goToPrev);
+            nextBtn.addEventListener('click', goToNext);
+
+            // Click on a card to make it active (bring to front)
+            cards.forEach((card, index) => {
+                card.addEventListener('click', () => {
+                    currentIndex = index;
+                    updateCardPositions();
+                });
+            });
+
+            // Initial positioning
+            updateCardPositions();
+
+            // --- LOADING OVERLAY LOGIC FOR PDF DOWNLOAD ---
+            const forms = document.querySelectorAll('.download-form');
+            console.log(`Found ${forms.length} download forms.`);
+
+            forms.forEach(form => {
+                form.addEventListener('submit', function(event) {
+                    console.log('Form submission event triggered for:', form);
+                    console.log('Current event type:', event.type);
+                    console.log('Is preventDefault callable?', typeof event.preventDefault === 'function');
+                    
+                    event.preventDefault(); // Prevent default form submission to handle it via JS
+                    console.log('event.preventDefault() called. Page should NOT redirect.');
+
+                    if (loadingOverlay) {
+                        console.log('Attempting to show loading overlay...');
+                        loadingOverlay.classList.add('show'); 
+                        
+                        // Log computed styles to verify visibility
+                        console.log('Overlay computed display after add "show":', window.getComputedStyle(loadingOverlay).display);
+                        console.log('Overlay computed opacity after add "show":', window.getComputedStyle(loadingOverlay).opacity);
+                        console.log('Overlay computed visibility after add "show":', window.getComputedStyle(loadingOverlay).visibility);
+                    } else {
+                        console.error('Loading overlay element not found. Cannot show loader.');
+                    }
+
+
+                    // Create a hidden iframe
+                    const iframe = document.createElement('iframe');
+                    iframe.style.display = 'none';
+                    iframe.src = 'about:blank'; // Start with a blank page
+                    iframe.name = 'download_iframe'; // Assign name directly
+                    document.body.appendChild(iframe); // Append iframe BEFORE submitting form to it
+
+                    // Submit the form to the iframe
+                    form.target = 'download_iframe'; // Set target to the iframe's name
+                    form.submit(); // Submit the form
+
+                    console.log('Form submitted to hidden iframe.');
+
+                    // Event listener for iframe load (when PDF is served)
+                    iframe.onload = function() {
+                        console.log('Iframe loaded. This usually means download started or completed.');
+                        setTimeout(() => {
+                            if (loadingOverlay) {
+                                loadingOverlay.classList.remove('show'); // Hide overlay
+                                console.log('Loading overlay hidden by iframe onload (after 1s delay).');
+                            }
+                            if (iframe.parentNode) {
+                                iframe.parentNode.removeChild(iframe);
+                                console.log('Hidden iframe removed.');
+                            }
+                        }, 1000); // Give it a little time for browser to process download
+                    };
+                    iframe.onerror = function() {
+                        console.error('Iframe encountered an error during loading.');
+                        if (loadingOverlay) {
+                            loadingOverlay.classList.remove('show');
+                        }
+                    };
+
+                    // Fallback in case iframe.onload doesn't fire as expected or very fast downloads
+                    setTimeout(() => {
+                        if (loadingOverlay && loadingOverlay.classList.contains('show')) {
+                             loadingOverlay.classList.remove('show');
+                             console.log('Loading overlay hidden by 10 second timeout (fallback).');
+                        }
+                        if (iframe.parentNode) {
+                            iframe.parentNode.removeChild(iframe);
+                            console.log('Hidden iframe removed by 10 second timeout (fallback).');
+                        }
+                    }, 10000); // 10 seconds timeout
+                });
+            });
+
+            // Keep these for potential back navigation or general errors
+            window.addEventListener('pageshow', function(event) {
+                if (event.persisted) {
+                    if (loadingOverlay) {
+                        loadingOverlay.classList.remove('show');
+                        console.log('Loading overlay hidden on pageshow (persisted).');
+                    }
+                }
+            });
+            window.addEventListener('error', function(e) {
+                console.error('Global window error caught:', e.message);
+                if (loadingOverlay) {
+                    loadingOverlay.classList.remove('show');
+                    console.log('Loading overlay hidden on global error.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
